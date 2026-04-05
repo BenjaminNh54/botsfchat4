@@ -267,7 +267,7 @@ while True:
         quiz = load_json(QUIZ_STATE_FILE)
         vip_data = load_json(VIP_FILE)
 
-        if quiz.get("active") and response is None:
+        if quiz.get("active"):
             if time.time() - quiz["start_time"] >= quiz["duration"]:
                 response = f"⏰ Temps écoulé ! Réponse : {quiz['answer']}"
                 save_json(QUIZ_STATE_FILE, {"active": False})
@@ -277,7 +277,7 @@ while True:
                     save_json(VIP_FILE, vip_data)
                     send_message("❌ Série VIP interrompue, bonus annulé.")
 
-            elif text == quiz["answer"]:
+            elif response is None and text == quiz["answer"]:
                 points_to_add = 1
                 money_to_add = 10
 
