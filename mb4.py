@@ -50,7 +50,7 @@ def send_message(content):
             "conversation_with_id": CONV_WITH_ID,
             "content": content
         })
-    except:
+    except Exception:
         pass
 
 # === Quiz ===
@@ -186,7 +186,7 @@ while True:
             "conversation_with_id": CONV_WITH_ID
         })
         messages = r.json()
-    except:
+    except Exception:
         time.sleep(SLEEP_SECONDS)
         continue
 
@@ -209,7 +209,7 @@ while True:
         # COMMANDES
         # =============================
         if text == "?help":
-            response = "?quiz\n?classementquiz\n?wallet\n?shop\n?inventory\n?meteo\n?pop"
+            response = "?help\n?quiz\n?classementquiz\n?wallet\n?classementwallet\n?shop\n?inventory\n?buy ID\n?use ID\n?meteo\n?pop"
         elif text == "?quiz":
             quiz = load_json(QUIZ_STATE_FILE)
             if quiz.get("active"):
@@ -223,7 +223,7 @@ while True:
                     "start_time": time.time(),
                     "duration": 30
                 })
-                response = f"🎯 QUIZ (10s) : {question['q']}"
+                response = f"🎯 QUIZ (30s) : {question['q']}"
         elif text == "?classementquiz":
             response = get_quiz_ranking()
         elif text == "?wallet":
@@ -237,26 +237,28 @@ while True:
             try:
                 item_id = int(text.split()[1])
                 response = buy_item(user, item_id)
-            except:
+            except (ValueError, IndexError):
                 response = "❌ Syntaxe : ?buy ID"
         elif text.startswith("?use "):
             try:
                 item_id = int(text.split()[1])
                 response = use_item(user, item_id)
-            except:
+            except (ValueError, IndexError):
                 response = "❌ Syntaxe : ?use ID"
         elif text == "?meteo":
             try:
                 response = requests.get("https://wttr.in/Nancy?format=3").text
-            except:
+            except Exception:
                 response = "Erreur météo"
+        elif text == "?classementwallet":
+            response = get_money_ranking()
         elif text == "?pop":
             try:
                 r = requests.get("https://api.worldbank.org/v2/country/WLD/indicator/SP.POP.TOTL",
                                  params={"format": "json", "per_page": 1})
                 data = r.json()
                 response = str(data[1][0]["value"])
-            except:
+            except Exception:
                 response = "Erreur API"
 
         # =============================
@@ -275,7 +277,7 @@ while True:
                     save_json(VIP_FILE, vip_data)
                     send_message("❌ Série VIP interrompue, bonus annulé.")
 
-            elif text == quiz["answer"]:
+            elif response is None and text == quiz["answer"]:
                 points_to_add = 1
                 money_to_add = 10
 
